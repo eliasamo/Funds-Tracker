@@ -1,0 +1,7 @@
+To avoid this happening again — the server stops whenever the terminal is closed or interrupted. 
+To keep it running reliably, you can pin a terminal in VS Code and run npm run dev there yourself. 
+Just press Ctrl+` to open the terminal in VS Code, then run: npm run dev
+Leave that terminal open and the server will stay alive.
+
+
+"I was upgrading Node to 20 so I can run node scripts/seed-fund.mjs --name "Avanza Zero" — ready to test it now."
