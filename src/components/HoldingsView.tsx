@@ -85,8 +85,8 @@ export default function HoldingsView({ holdings, countries, loading }: HoldingsV
               {/* Bar */}
               <div className="relative flex-1 h-5 rounded-md overflow-hidden bg-white/[0.04]">
                 <div
-                  className="h-full rounded-md bg-[var(--accent)]/50 transition-all duration-500"
-                  style={{ width: `${(h.weight / maxWeight) * 100}%` }}
+                  className="h-full rounded-md transition-all duration-500"
+                  style={{ width: `${(h.weight / maxWeight) * 100}%`, backgroundColor: "rgba(59,130,246,0.5)" }}
                 />
                 <span className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] text-[var(--foreground)]">
                   {h.weight.toFixed(1)}%
