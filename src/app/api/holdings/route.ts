@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   const seenNames = new Set<string>();
   const raw = (data || [])
     .map((h) => {
-      const stock = h.stocks as { ticker: string; name: string; country: string; sector: string } | null;
+      const stock = (h.stocks as unknown) as { ticker: string; name: string; country: string; sector: string } | null;
       return {
         ticker: stock?.ticker ?? "",
         name: stock?.name ?? "",
