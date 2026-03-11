@@ -52,3 +52,19 @@ CREATE POLICY "Allow all on stocks" ON stocks FOR ALL USING (true) WITH CHECK (t
 CREATE POLICY "Allow all on funds" ON funds FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all on fund_holdings" ON fund_holdings FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all on news_articles" ON news_articles FOR ALL USING (true) WITH CHECK (true);
+
+-- ==============================================
+-- Function: delete_user
+-- Allows a logged-in user to delete their own account.
+-- Must be run in the Supabase SQL Editor.
+-- ==============================================
+CREATE OR REPLACE FUNCTION delete_user()
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  DELETE FROM auth.users WHERE id = auth.uid();
+END;
+$$;

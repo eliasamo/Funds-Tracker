@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { TrendingUp, Newspaper, BarChart2, LogOut } from "lucide-react";
+import { TrendingUp, Newspaper, BarChart2, LogOut, User } from "lucide-react";
 import AddFundPanel from "@/components/AddFundPanel";
 import FundSelector from "@/components/FundSelector";
 import NewsFilters from "@/components/NewsFilters";
@@ -9,6 +9,7 @@ import NewsFeed from "@/components/NewsFeed";
 import HoldingsView from "@/components/HoldingsView";
 import { createClient } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface Fund {
   isin: string;
@@ -137,6 +138,16 @@ export default function Home() {
     }
   }, []);
 
+  const handleFundRemove = useCallback(async (fundIsin: string) => {
+    await fetch(`/api/funds?isin=${encodeURIComponent(fundIsin)}`, { method: "DELETE" });
+    setFunds((prev) => prev.filter((f) => f.isin !== fundIsin));
+    if (selectedFundIsin === fundIsin) {
+      setSelectedFundIsin(null);
+      setNews([]);
+      setHoldings([]);
+    }
+  }, [selectedFundIsin]);
+
   const handleFundSelect = (fundIsin: string) => {
     setSelectedFundIsin(fundIsin);
     setSelectedCountry("");
@@ -169,7 +180,7 @@ export default function Home() {
             <h1 className="text-sm font-bold tracking-tight text-[var(--foreground)]">
               Fund Tracker
             </h1>
-            <p className="text-[10px] text-[var(--muted)]">Look-through news</p>
+            <p className="text-[10px] text-[var(--muted)]">Your trusty fund tracker</p>
           </div>
         </div>
 
@@ -184,15 +195,20 @@ export default function Home() {
             funds={funds}
             selectedFundIsin={selectedFundIsin}
             onSelect={handleFundSelect}
+            onRemove={handleFundRemove}
             loading={newsLoading}
           />
         </div>
 
         {/* Sidebar footer */}
         <div className="border-t border-[var(--card-border)] px-5 py-3 flex items-center justify-between">
-          <p className="text-[10px] text-[var(--muted)]">
-            Fund Tracker &middot; Supabase
-          </p>
+          <Link
+            href="/profile"
+            className="flex items-center gap-1 text-[10px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+          >
+            <User className="h-3 w-3" />
+            Profile
+          </Link>
           <button
             onClick={handleLogout}
             title="Sign out"

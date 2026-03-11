@@ -1,6 +1,6 @@
 "use client";
 
-import { Layers, Loader2 } from "lucide-react";
+import { Layers, Loader2, Trash2 } from "lucide-react";
 
 interface Fund {
   isin: string;
@@ -11,6 +11,7 @@ interface FundSelectorProps {
   funds: Fund[];
   selectedFundIsin: string | null;
   onSelect: (fundIsin: string) => void;
+  onRemove: (fundIsin: string) => void;
   loading: boolean;
 }
 
@@ -18,6 +19,7 @@ export default function FundSelector({
   funds,
   selectedFundIsin,
   onSelect,
+  onRemove,
   loading,
 }: FundSelectorProps) {
   const sectionLabel =
@@ -49,39 +51,52 @@ export default function FundSelector({
           const isSelected = fund.isin === selectedFundIsin;
 
           return (
-            <button
-              key={fund.isin}
-              onClick={() => onSelect(fund.isin)}
-              disabled={loading}
-              className={`group relative w-full rounded-lg border px-3 py-2.5 text-left transition-all disabled:cursor-wait ${
-                isSelected
-                  ? "border-[var(--accent)]/50 bg-[var(--accent)]/10"
-                  : "border-[var(--card-border)] hover:border-[var(--accent)]/30 hover:bg-white/[0.03]"
-              }`}
-            >
-              <div
-                className={`truncate text-xs font-semibold ${
-                  isSelected ? "text-white" : "text-[var(--foreground)]"
+            <div key={fund.isin} className="group/row relative">
+              <button
+                onClick={() => onSelect(fund.isin)}
+                disabled={loading}
+                className={`relative w-full rounded-lg border px-3 py-2.5 text-left transition-all disabled:cursor-wait pr-8 ${
+                  isSelected
+                    ? "border-[var(--accent)]/50 bg-[var(--accent)]/10"
+                    : "border-[var(--card-border)] hover:border-[var(--accent)]/30 hover:bg-white/[0.03]"
                 }`}
               >
-                {fund.name}
-              </div>
-              <div className="mt-0.5 font-mono text-[10px] text-[var(--muted)]">
-                {fund.isin}
-              </div>
-
-              {/* Loading overlay */}
-              {isSelected && loading && (
-                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-[var(--background)]/60">
-                  <Loader2 className="h-4 w-4 animate-spin text-[var(--accent)]" />
+                <div
+                  className={`truncate text-xs font-semibold ${
+                    isSelected ? "text-white" : "text-[var(--foreground)]"
+                  }`}
+                >
+                  {fund.name}
                 </div>
-              )}
+                <div className="mt-0.5 font-mono text-[10px] text-[var(--muted)]">
+                  {fund.isin}
+                </div>
 
-              {/* Active indicator bar */}
-              {isSelected && !loading && (
-                <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-r-full bg-[var(--accent)]" />
-              )}
-            </button>
+                {/* Loading overlay */}
+                {isSelected && loading && (
+                  <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-[var(--background)]/60">
+                    <Loader2 className="h-4 w-4 animate-spin text-[var(--accent)]" />
+                  </div>
+                )}
+
+                {/* Active indicator bar */}
+                {isSelected && !loading && (
+                  <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-r-full bg-[var(--accent)]" />
+                )}
+              </button>
+
+              {/* Remove button — appears on row hover */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemove(fund.isin);
+                }}
+                title="Remove fund"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-[var(--muted)] opacity-0 transition-all group-hover/row:opacity-100 hover:text-red-400"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </div>
           );
         })}
       </div>
