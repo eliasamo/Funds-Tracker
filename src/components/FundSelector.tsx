@@ -13,6 +13,8 @@ interface FundSelectorProps {
   onSelect: (fundIsin: string) => void;
   onRemove: (fundIsin: string) => void;
   loading: boolean;
+  articleCounts: Record<string, number>;
+  unreadCounts: Record<string, number>;
 }
 
 export default function FundSelector({
@@ -21,6 +23,8 @@ export default function FundSelector({
   onSelect,
   onRemove,
   loading,
+  articleCounts,
+  unreadCounts,
 }: FundSelectorProps) {
   const sectionLabel =
     "mb-3 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--muted)]";
@@ -68,8 +72,19 @@ export default function FundSelector({
                 >
                   {fund.name}
                 </div>
-                <div className="mt-0.5 font-mono text-[10px] text-[var(--muted)]">
-                  {fund.isin}
+                <div className="mt-0.5 flex items-center gap-2">
+                  <span className="font-mono text-[10px] text-[var(--muted)]">{fund.isin}</span>
+                  {articleCounts[fund.isin] > 0 && (
+                    <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${
+                      unreadCounts[fund.isin] > 0
+                        ? "bg-[var(--accent)]/20 text-[var(--accent)]"
+                        : "bg-white/5 text-[var(--muted)]"
+                    }`}>
+                      {unreadCounts[fund.isin] > 0
+                        ? `${unreadCounts[fund.isin]} new`
+                        : `${articleCounts[fund.isin]} articles`}
+                    </span>
+                  )}
                 </div>
 
                 {/* Loading overlay */}

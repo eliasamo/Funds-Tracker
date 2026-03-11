@@ -64,6 +64,10 @@ export default function Home() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [newsLoading, setNewsLoading] = useState(false);
 
+  // --- Article counts per fund (total) and read tracking ---
+  const [articleCounts, setArticleCounts] = useState<Record<string, number>>({});
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
+
   // --- Holdings state ---
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [holdingCountries, setHoldingCountries] = useState<CountrySummary[]>([]);
@@ -112,6 +116,7 @@ export default function Home() {
         setNews(data.news);
         setCountries(data.filters?.countries || []);
         setSectors(data.filters?.sectors || []);
+        setArticleCounts((prev) => ({ ...prev, [fundIsin]: data.news.length }));
       }
     } catch (err) {
       console.error("Failed to load news:", err);
@@ -197,6 +202,15 @@ export default function Home() {
             onSelect={handleFundSelect}
             onRemove={handleFundRemove}
             loading={newsLoading}
+            articleCounts={articleCounts}
+            unreadCounts={Object.fromEntries(
+              Object.entries(articleCounts).map(([isin, total]) => [
+                isin,
+                isin === selectedFundIsin
+                  ? news.filter((n) => !readIds.has(n.id)).length
+                  : total,
+              ])
+            )}
           />
         </div>
 
@@ -296,7 +310,11 @@ export default function Home() {
 
           {/* News view */}
           {selectedFundIsin && view === "news" && (
-            <NewsFeed news={filteredNews} loading={newsLoading} />
+            <NewsFeed
+              news={filteredNews}
+              loading={newsLoading}
+              onReadChange={setReadIds}
+            />
           )}
 
           {/* Holdings view */}

@@ -1,6 +1,25 @@
 "use client";
 
+import { useState, useEffect, useCallback } from "react";
 import { stripSuffix } from "@/lib/ticker-utils";
+
+const LS_KEY = "ft_read_articles";
+
+function getReadIds(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function markRead(id: string) {
+  const ids = getReadIds();
+  ids.add(id);
+  localStorage.setItem(LS_KEY, JSON.stringify([...ids]));
+}
 
 interface NewsItem {
   id: string;
@@ -19,9 +38,28 @@ interface NewsItem {
 interface NewsFeedProps {
   news: NewsItem[];
   loading: boolean;
+  onReadChange?: (readIds: Set<string>) => void;
 }
 
-export default function NewsFeed({ news, loading }: NewsFeedProps) {
+export default function NewsFeed({ news, loading, onReadChange }: NewsFeedProps) {
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
+
+  // Hydrate from localStorage after mount
+  useEffect(() => {
+    const ids = getReadIds();
+    setReadIds(ids);
+    onReadChange?.(ids);
+  }, []);
+
+  const handleClick = useCallback((id: string) => {
+    markRead(id);
+    setReadIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      onReadChange?.(next);
+      return next;
+    });
+  }, [onReadChange]);
   if (loading) {
     return (
       <div className="space-y-3">
@@ -77,13 +115,20 @@ export default function NewsFeed({ news, loading }: NewsFeedProps) {
 
   return (
     <div className="space-y-3">
-      {news.map((item) => (
+      {news.map((item) => {
+        const isRead = readIds.has(item.id);
+        return (
         <a
           key={item.id}
           href={item.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="group block rounded-xl border border-zinc-800 bg-[var(--card-bg)] p-5 transition-all hover:border-zinc-700 hover:bg-white/[0.02]"
+          onClick={() => handleClick(item.id)}
+          className={`group block rounded-xl border bg-[var(--card-bg)] p-5 transition-all hover:bg-white/[0.02] ${
+            isRead
+              ? "border-zinc-800/50 opacity-50 hover:opacity-80"
+              : "border-zinc-800 hover:border-zinc-700"
+          }`}
         >
           <div className="flex gap-4">
             {/* Thumbnail */}
@@ -141,13 +186,15 @@ export default function NewsFeed({ news, loading }: NewsFeedProps) {
 
                 {/* Source · date */}
                 <span className="ml-auto text-[10px] text-[var(--muted)]/70">
+                  {isRead && <span className="mr-1.5 text-[var(--muted)]/50">Read ·</span>}
                   {item.source} &middot; {formatDate(item.published_at)}
                 </span>
               </div>
             </div>
           </div>
         </a>
-      ))}
+        );
+      })}
     </div>
   );
 }
