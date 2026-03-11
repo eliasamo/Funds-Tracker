@@ -68,3 +68,25 @@ BEGIN
   DELETE FROM auth.users WHERE id = auth.uid();
 END;
 $$;
+
+-- ==============================================
+-- Table: user_funds
+-- Tracks which funds each user has added to their dashboard.
+-- Fund data (holdings etc.) stays shared in "funds" — only the 
+-- watchlist relationship is per-user.
+-- Run this in the Supabase SQL Editor if upgrading an existing DB.
+-- ==============================================
+CREATE TABLE IF NOT EXISTS user_funds (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  fund_isin TEXT NOT NULL REFERENCES funds(isin) ON DELETE CASCADE,
+  added_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(user_id, fund_isin)
+);
+
+ALTER TABLE user_funds ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage their own fund list"
+  ON user_funds FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);

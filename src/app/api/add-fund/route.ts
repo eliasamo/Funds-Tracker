@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase-server";
 import { formatTicker, normalizeFinnhubTicker } from "@/lib/ticker-utils";
 
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
@@ -96,6 +96,13 @@ async function findAvanzaFund(name: string) {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { fundName } = await request.json();
 
     if (!fundName || typeof fundName !== "string") {
@@ -132,6 +139,11 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (existing && existing.length > 0) {
+      // Fund data already cached — just make sure this user has it in their list
+      await supabase
+        .from("user_funds")
+        .upsert({ user_id: user.id, fund_isin: fundIsin }, { onConflict: "user_id,fund_isin", ignoreDuplicates: true });
+
       return NextResponse.json({
         message: "Fund holdings are up to date (cached)",
         fund: { isin: fundIsin, name: resolvedName },
@@ -157,11 +169,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ── Step 4: Upsert fund row ───────────────────────────────────────────────
+    // ── Step 4: Upsert fund row and link to user ─────────────────────────────
     const { error: fundErr } = await supabase
       .from("funds")
       .upsert({ isin: fundIsin, name: resolvedName }, { onConflict: "isin" });
     if (fundErr) throw new Error("Fund upsert failed: " + fundErr.message);
+
+    await supabase
+      .from("user_funds")
+      .upsert({ user_id: user.id, fund_isin: fundIsin }, { onConflict: "user_id,fund_isin", ignoreDuplicates: true });
 
     // ── Step 5: Resolve tickers via Finnhub and seed holdings ─────────────────
     let seeded = 0;
