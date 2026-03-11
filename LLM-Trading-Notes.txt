@@ -1,0 +1,66 @@
+TRAINING AN LLM / AI MODEL TO TRADE FUNDS & STOCKS
+=====================================================
+
+IMPORTANT NOTE: Training an LLM specifically for trading is largely the wrong tool.
+LLMs generate text — they don't inherently optimize actions over time.
+The right approach combines several model types together.
+
+
+WHAT YOU ACTUALLY WANT: Reinforcement Learning (RL) + Supervised Models
+------------------------------------------------------------------------
+
+Approach              | What it does                                          | Common tech
+----------------------|-------------------------------------------------------|---------------------------
+RL agent              | Learns a policy (buy/sell/hold) by maximizing reward  | PPO, SAC, DQN via
+                      | (profit) through simulated trading                    | stable-baselines3
+Price prediction model| Forecasts next-day returns                            | LSTM, Transformer, XGBoost
+Sentiment model       | Classifies news/filings as bullish/bearish            | Fine-tuned BERT/FinBERT
+LLM as reasoning layer| Interprets news, earnings calls, analyst reports      | GPT-4o, Llama fine-tuned
+                      |                                                       | on financial text
+
+
+THE ACTUAL PIPELINE
+-------------------
+
+1. DATA
+   - Historical OHLCV prices, order book data, SEC filings, earnings transcripts, news
+   - Sources: Polygon.io, Refinitiv, Bloomberg (expensive)
+   - Free tiers: Yahoo Finance, Alpha Vantage
+
+2. FEATURE ENGINEERING
+   - Technical indicators: RSI, MACD
+   - Fundamental ratios: P/E, EV/EBITDA
+   - Sentiment scores derived from news
+
+3. TRAIN A PREDICTION OR RL MODEL
+   - Backtest on historical data
+   - Frameworks: backtrader, vectorbt
+
+4. USE AN LLM
+   - Parse unstructured text (news, filings) into signals
+   - Feed those signals into the prediction/RL model above
+
+5. PAPER TRADE BEFORE RISKING REAL MONEY
+   - Alpaca and Interactive Brokers offer paper trading APIs
+   - Validate live performance before committing capital
+
+
+THE HARD PARTS
+--------------
+
+- Non-stationarity: Markets change regime. Models trained on 2015-2020 can fail badly in 2022.
+- Overfitting: Easy to build something that looks great in backtest and fails live.
+- Transaction costs & slippage: Often wipe out small edges models find.
+- Data leakage: Very easy to accidentally let future data contaminate training.
+- Execution: A model that predicts well but can't execute in milliseconds is useless
+  for short-term trading. Long-term (weeks/months) is far more tractable.
+
+
+REALISTIC STARTING POINT
+-------------------------
+
+Fine-tune FinBERT (https://huggingface.co/ProsusAI/finbert) on news sentiment
+  → Feed sentiment scores as features into an XGBoost model for weekly return prediction
+  → Backtest with vectorbt
+
+This is achievable without a GPU cluster and gives you a real end-to-end system to learn from.

@@ -140,9 +140,13 @@ export async function POST(request: NextRequest) {
 
     if (existing && existing.length > 0) {
       // Fund data already cached — just make sure this user has it in their list
-      await supabase
+      const { error: linkErr } = await supabase
         .from("user_funds")
         .upsert({ user_id: user.id, fund_isin: fundIsin }, { onConflict: "user_id,fund_isin", ignoreDuplicates: true });
+      if (linkErr) {
+        console.error("user_funds upsert failed:", linkErr);
+        return NextResponse.json({ error: "Failed to save fund to your list: " + linkErr.message }, { status: 500 });
+      }
 
       return NextResponse.json({
         message: "Fund holdings are up to date (cached)",
@@ -175,9 +179,13 @@ export async function POST(request: NextRequest) {
       .upsert({ isin: fundIsin, name: resolvedName }, { onConflict: "isin" });
     if (fundErr) throw new Error("Fund upsert failed: " + fundErr.message);
 
-    await supabase
+    const { error: linkErr2 } = await supabase
       .from("user_funds")
       .upsert({ user_id: user.id, fund_isin: fundIsin }, { onConflict: "user_id,fund_isin", ignoreDuplicates: true });
+    if (linkErr2) {
+      console.error("user_funds upsert failed:", linkErr2);
+      return NextResponse.json({ error: "Failed to save fund to your list: " + linkErr2.message }, { status: 500 });
+    }
 
     // ── Step 5: Resolve tickers via Finnhub and seed holdings ─────────────────
     let seeded = 0;
