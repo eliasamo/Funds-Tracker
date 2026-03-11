@@ -9,7 +9,7 @@ DROP TABLE IF EXISTS fund_holdings CASCADE;
 DROP TABLE IF EXISTS funds CASCADE;
 DROP TABLE IF EXISTS stocks CASCADE;
 
--- 1. Table for individual stocks (cached metadata)
+-- Table for individual stocks (cached metadata)
 CREATE TABLE stocks (
   ticker TEXT PRIMARY KEY,
   name TEXT,
@@ -17,13 +17,13 @@ CREATE TABLE stocks (
   country TEXT
 );
 
--- 2. Table for funds
+-- Table for funds
 CREATE TABLE funds (
   isin TEXT PRIMARY KEY,
   name TEXT
 );
 
--- 3. Mapping: Which fund owns which stock?
+-- Mapping: Which fund owns which stock and at what weight (percentage)
 CREATE TABLE fund_holdings (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   fund_isin TEXT REFERENCES funds(isin),
@@ -32,7 +32,7 @@ CREATE TABLE fund_holdings (
   UNIQUE(fund_isin, stock_ticker)
 );
 
--- 4. News Articles with a UNIQUE constraint on the URL for deduplication
+-- News Articles with a UNIQUE constraint on the URL for deduplication
 CREATE TABLE news_articles (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   url TEXT UNIQUE,
@@ -47,7 +47,7 @@ ALTER TABLE funds ENABLE ROW LEVEL SECURITY;
 ALTER TABLE fund_holdings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE news_articles ENABLE ROW LEVEL SECURITY;
 
--- Policies (open read/write for anon key - tighten for production)
+-- Policies (open read/write for anon key, tighten for production)
 CREATE POLICY "Allow all on stocks" ON stocks FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all on funds" ON funds FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all on fund_holdings" ON fund_holdings FOR ALL USING (true) WITH CHECK (true);

@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { TrendingUp, Newspaper, BarChart2 } from "lucide-react";
+import { TrendingUp, Newspaper, BarChart2, LogOut } from "lucide-react";
 import AddFundPanel from "@/components/AddFundPanel";
 import FundSelector from "@/components/FundSelector";
 import NewsFilters from "@/components/NewsFilters";
 import NewsFeed from "@/components/NewsFeed";
 import HoldingsView from "@/components/HoldingsView";
+import { createClient } from "@/lib/supabase-browser";
+import { useRouter } from "next/navigation";
 
 interface Fund {
   isin: string;
@@ -41,6 +43,15 @@ interface CountrySummary {
 }
 
 export default function Home() {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  };
+
   // --- Fund state ---
   const [funds, setFunds] = useState<Fund[]>([]);
   const [selectedFundIsin, setSelectedFundIsin] = useState<string | null>(null);
@@ -178,10 +189,18 @@ export default function Home() {
         </div>
 
         {/* Sidebar footer */}
-        <div className="border-t border-[var(--card-border)] px-5 py-3">
+        <div className="border-t border-[var(--card-border)] px-5 py-3 flex items-center justify-between">
           <p className="text-[10px] text-[var(--muted)]">
-            Data from Finnhub &middot; Next.js + Supabase
+            Fund Tracker &middot; Supabase
           </p>
+          <button
+            onClick={handleLogout}
+            title="Sign out"
+            className="flex items-center gap-1 text-[10px] text-[var(--muted)] hover:text-red-400 transition-colors"
+          >
+            <LogOut className="h-3 w-3" />
+            Sign out
+          </button>
         </div>
       </aside>
 
