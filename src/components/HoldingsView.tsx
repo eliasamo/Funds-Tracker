@@ -64,10 +64,38 @@ export default function HoldingsView({ holdings, countries, loading }: HoldingsV
   }
 
   const maxWeight = holdings[0]?.weight ?? 1;
+  const top10 = holdings.slice(0, 10);
 
   return (
     <div className="space-y-6">
-      {/* ── Country breakdown ──────────────────────────────────────── */}
+
+      {/* ── Top 10 bar chart ───────────────────────────────────────── */}
+      <div>
+        <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[var(--muted)]">
+          Top 10 Holdings
+        </p>
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] px-5 py-4 space-y-2.5">
+          {top10.map((h) => (
+            <div key={h.ticker} className="flex items-center gap-3">
+              {/* Label */}
+              <div className="w-32 flex-shrink-0 min-w-0">
+                <p className="truncate text-[11px] font-medium text-[var(--foreground)]">{h.name}</p>
+                <p className="font-mono text-[9px] text-[var(--accent)]">{h.ticker}</p>
+              </div>
+              {/* Bar */}
+              <div className="relative flex-1 h-5 rounded-md overflow-hidden bg-white/[0.04]">
+                <div
+                  className="h-full rounded-md bg-[var(--accent)]/50 transition-all duration-500"
+                  style={{ width: `${(h.weight / maxWeight) * 100}%` }}
+                />
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] text-[var(--foreground)]">
+                  {h.weight.toFixed(1)}%
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
       {countries.length > 0 && (
         <div>
           <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[var(--muted)]">

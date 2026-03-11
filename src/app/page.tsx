@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { TrendingUp, Newspaper, BarChart2, LogOut, User } from "lucide-react";
+import { TrendingUp, Newspaper, BarChart2, LogOut, User, RefreshCw } from "lucide-react";
 import AddFundPanel from "@/components/AddFundPanel";
 import FundSelector from "@/components/FundSelector";
 import NewsFilters from "@/components/NewsFilters";
@@ -246,6 +246,17 @@ export default function Home() {
             >
               <BarChart2 className="h-3.5 w-3.5" />
               Holdings
+            </button>
+
+            {/* Refresh button */}
+            <button
+              onClick={() => selectedFundIsin && loadNews(selectedFundIsin)}
+              disabled={newsLoading}
+              title="Refresh news"
+              className="ml-auto flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[10px] text-[var(--muted)] transition-colors hover:text-[var(--foreground)] disabled:opacity-40"
+            >
+              <RefreshCw className={`h-3 w-3 ${newsLoading ? "animate-spin" : ""}`} />
+              Refresh
             </button>
           </div>
         )}
