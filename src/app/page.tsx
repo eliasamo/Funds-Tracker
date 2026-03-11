@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { TrendingUp, Newspaper, BarChart2, LogOut, User, RefreshCw } from "lucide-react";
+import { TrendingUp, Newspaper, BarChart2, LogOut, User, RefreshCw, GitCompareArrows } from "lucide-react";
 import AddFundPanel from "@/components/AddFundPanel";
 import FundSelector from "@/components/FundSelector";
 import NewsFilters from "@/components/NewsFilters";
 import NewsFeed from "@/components/NewsFeed";
 import HoldingsView from "@/components/HoldingsView";
+import CompareView from "@/components/CompareView";
 import { createClient } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -58,7 +59,7 @@ export default function Home() {
   const [selectedFundIsin, setSelectedFundIsin] = useState<string | null>(null);
 
   // --- View tab ---
-  const [view, setView] = useState<"news" | "holdings">("news");
+  const [view, setView] = useState<"news" | "holdings" | "compare">("news");
 
   // --- News state ---
   const [news, setNews] = useState<NewsItem[]>([]);
@@ -261,6 +262,17 @@ export default function Home() {
               <BarChart2 className="h-3.5 w-3.5" />
               Holdings
             </button>
+            <button
+              onClick={() => setView("compare")}
+              className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-colors ${
+                view === "compare"
+                  ? "border-[var(--accent)] text-white"
+                  : "border-transparent text-[var(--muted)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              <GitCompareArrows className="h-3.5 w-3.5" />
+              Compare
+            </button>
 
             {/* Refresh button */}
             <button
@@ -324,6 +336,11 @@ export default function Home() {
               countries={holdingCountries}
               loading={holdingsLoading}
             />
+          )}
+
+          {/* Compare view */}
+          {selectedFundIsin && view === "compare" && (
+            <CompareView funds={funds} primaryIsin={selectedFundIsin} />
           )}
         </main>
       </div>
