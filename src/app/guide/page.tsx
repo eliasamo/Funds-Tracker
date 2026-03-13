@@ -43,6 +43,60 @@ function MockSearchBar() {
   );
 }
 
+/* ── Mockup: Fund list with sentiment bars ────────────────── */
+function MockSentimentFundList() {
+  const funds = [
+    { name: "Avanza Global Fund", articles: 24, positive: 0.63, neutral: 0.24, negative: 0.13, selected: true },
+    { name: "Technology Select Fund", articles: 18, positive: 0.18, neutral: 0.27, negative: 0.55, selected: false },
+  ];
+
+  return (
+    <div className="relative mx-auto w-full max-w-xs">
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--sidebar-bg)] p-4 shadow-2xl">
+        <p className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)]">Your Funds</p>
+
+        <div className="space-y-1.5">
+          {funds.map((fund, i) => (
+            <div
+              key={i}
+              className={`rounded-lg border px-3 py-2.5 ${
+                fund.selected
+                  ? "border-[var(--accent)]/50 bg-[var(--accent)]/10"
+                  : "border-[var(--card-border)]"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className={`truncate text-[11px] font-semibold ${fund.selected ? "text-white" : "text-[var(--foreground)]"}`}>
+                  {fund.name}
+                </span>
+                <span className="ml-2 flex-shrink-0 text-[9px] text-[var(--muted)]">{fund.articles} articles</span>
+              </div>
+              <div className="mt-2 flex h-1 w-full overflow-hidden rounded-full bg-white/5">
+                <div className="bg-green-500/60" style={{ width: `${fund.positive * 100}%` }} />
+                <div className="bg-white/20"    style={{ width: `${fund.neutral  * 100}%` }} />
+                <div className="bg-red-500/60"  style={{ width: `${fund.negative * 100}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Legend */}
+        <div className="mt-3 flex items-center justify-center gap-3">
+          <span className="flex items-center gap-1 text-[9px] text-[var(--muted)]">
+            <span className="inline-block h-1.5 w-3 rounded-full bg-green-500/60" /> Positive
+          </span>
+          <span className="flex items-center gap-1 text-[9px] text-[var(--muted)]">
+            <span className="inline-block h-1.5 w-3 rounded-full bg-white/20" /> Neutral
+          </span>
+          <span className="flex items-center gap-1 text-[9px] text-[var(--muted)]">
+            <span className="inline-block h-1.5 w-3 rounded-full bg-red-500/60" /> Negative
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Mockup: Fund list with News/Holdings tabs ────────────── */
 function MockFundList() {
   return (
@@ -222,12 +276,36 @@ export default function GuidePage() {
         </div>
       </section>
 
-      {/* ── Section 4: News Feed ─────────────────────────────── */}
+            {/* ── Section 4: Sentiment Analysis ────────────── */}
+      <section className="relative flex min-h-screen snap-start flex-col items-center justify-center px-6">
+        <div className="pointer-events-none absolute top-1/4 h-64 w-64 rounded-full bg-purple-500/5 blur-[120px]" />
+
+        <div className="relative mb-10 text-center">
+          <StepBadge step={3} />
+          <h2 className="mb-3 text-2xl font-bold text-[var(--foreground)]">
+            Get a sentiment view of your funds
+          </h2>
+          <p className="mx-auto max-w-sm text-sm leading-relaxed text-[var(--muted)]">
+            You dont know what the feeling is for your fund? No worries, we got you. 
+            Our sentiment analysis gives you a quick pulse on the overall tone of the news around your holdings. 
+            Switch to the <strong className="text-amber-400">Sentiment Guide</strong> tab to learn how it works and how to use it in your investing.
+          </p>
+        </div>
+
+        <MockSentimentFundList />
+
+        <div className="absolute bottom-12 mt-16">
+          <ScrollHint />
+        </div>
+      </section>
+
+
+      {/* ── Section 5: News Feed ─────────────────────────────── */}
       <section className="relative flex min-h-screen snap-start flex-col items-center justify-center px-6">
         <div className="pointer-events-none absolute top-1/4 h-64 w-64 rounded-full bg-blue-500/5 blur-[120px]" />
 
         <div className="relative mb-10 text-center">
-          <StepBadge step={3} />
+          <StepBadge step={4} />
           <h2 className="mb-3 text-2xl font-bold text-[var(--foreground)]">
             Stay on top of the news
           </h2>

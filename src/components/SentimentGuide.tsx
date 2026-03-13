@@ -88,23 +88,66 @@ export default function SentimentGuide() {
 
       {/* The sentiment bar */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-6">
-        <h3 className="mb-3 text-sm font-semibold text-[var(--foreground)]">
+        <h3 className="mb-1 text-sm font-semibold text-[var(--foreground)]">
           The sentiment bar in the sidebar
         </h3>
-        <div className="mb-4 flex h-2.5 w-full overflow-hidden rounded-full bg-white/5">
-          <div className="bg-green-500/60" style={{ width: "45%" }} />
-          <div className="bg-white/20" style={{ width: "30%" }} />
-          <div className="bg-red-500/60" style={{ width: "25%" }} />
-        </div>
-        <p className="text-xs leading-relaxed text-[var(--muted)]">
-          The thin coloured bar underneath each fund in the sidebar summarises
-          all of that fund's recent news at a glance.{" "}
-          <span className="text-green-400">Green</span> represents the share of
-          positive articles,{" "}
+        <p className="mb-4 text-xs leading-relaxed text-[var(--muted)]">
+          The thin coloured bar underneath each fund card summarises all of that
+          fund's recent news at a glance.{" "}
+          <span className="text-green-400">Green</span> is positive,{" "}
           <span className="text-[var(--foreground)]/60">grey</span> neutral, and{" "}
-          <span className="text-red-400">red</span> negative. A mostly green bar
-          means the news coverage of that fund's holdings has been broadly
-          constructive this week.
+          <span className="text-red-400">red</span> negative.
+        </p>
+
+        {/* Sidebar panel mockup */}
+        <div className="rounded-lg border border-[var(--card-border)] bg-[var(--sidebar-bg)] px-4 py-4">
+          {/* YOUR FUNDS header */}
+          <p className="mb-3 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--muted)]">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/>
+              <rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>
+            </svg>
+            Your Funds
+          </p>
+
+          <div className="space-y-1.5">
+            {/* Card 1 — selected, mostly positive */}
+            <div className="rounded-lg border border-[var(--accent)]/50 bg-[var(--accent)]/10 px-3 py-2.5">
+              <p className="truncate text-xs font-semibold text-white">Swedbank Robur Teknologi</p>
+              <p className="mt-0.5 text-[10px] text-[var(--muted)]">42 articles</p>
+              <div className="mt-2 flex h-1 w-full overflow-hidden rounded-full bg-white/5">
+                <div className="bg-green-500/60" style={{ width: "63%" }} />
+                <div className="bg-white/20" style={{ width: "24%" }} />
+                <div className="bg-red-500/60" style={{ width: "13%" }} />
+              </div>
+            </div>
+
+            {/* Card 2 — unselected, mixed */}
+            <div className="rounded-lg border border-[var(--card-border)] px-3 py-2.5">
+              <p className="truncate text-xs font-semibold text-[var(--foreground)]">AMF Aktiefond Global</p>
+              <p className="mt-0.5 text-[10px] text-[var(--muted)]">78 articles</p>
+              <div className="mt-2 flex h-1 w-full overflow-hidden rounded-full bg-white/5">
+                <div className="bg-green-500/60" style={{ width: "35%" }} />
+                <div className="bg-white/20" style={{ width: "38%" }} />
+                <div className="bg-red-500/60" style={{ width: "27%" }} />
+              </div>
+            </div>
+
+            {/* Card 3 — unselected, mostly negative */}
+            <div className="rounded-lg border border-[var(--card-border)] px-3 py-2.5">
+              <p className="truncate text-xs font-semibold text-[var(--foreground)]">Länsförsäkringar Europa</p>
+              <p className="mt-0.5 text-[10px] text-[var(--muted)]">55 articles</p>
+              <div className="mt-2 flex h-1 w-full overflow-hidden rounded-full bg-white/5">
+                <div className="bg-green-500/60" style={{ width: "18%" }} />
+                <div className="bg-white/20" style={{ width: "27%" }} />
+                <div className="bg-red-500/60" style={{ width: "55%" }} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p className="mt-3 text-[10px] text-[var(--muted)]/60">
+          The first fund has broadly positive coverage, the second is mixed, and the third is mostly negative.
         </p>
       </div>
 

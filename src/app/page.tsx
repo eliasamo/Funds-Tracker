@@ -330,7 +330,7 @@ export default function Home() {
         {/* Scrollable content area */}
         <main className="flex-1 overflow-y-auto px-6 py-6">
           {/* Empty state */}
-          {!selectedFundIsin && (
+          {!selectedFundIsin && view !== "guide" && (
             <div className="flex h-full flex-col items-center justify-center text-center">
               <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--card-bg)] ring-1 ring-[var(--card-border)]">
                 <Newspaper className="h-6 w-6 text-[var(--muted)]" />
@@ -368,7 +368,7 @@ export default function Home() {
           )}
 
           {/* Sentiment guide */}
-          {selectedFundIsin && view === "guide" && (
+          {view === "guide" && (
             <SentimentGuide />
           )}
         </main>
