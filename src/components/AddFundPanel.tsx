@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 interface AddFundPanelProps {
   onFundAdded: (fund: { isin: string; name: string }) => void;
@@ -88,6 +89,14 @@ export default function AddFundPanel({ onFundAdded }: AddFundPanelProps) {
           )}
         </button>
       </div>
+
+      <Link
+        href="/browse"
+        className="mt-2 flex items-center justify-center gap-1 text-[11px] text-[var(--muted)] transition hover:text-[var(--foreground)]"
+      >
+        Browse all funds
+        <ArrowRight className="h-3 w-3" />
+      </Link>
 
       {result && (
         <div
