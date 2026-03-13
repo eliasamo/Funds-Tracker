@@ -64,3 +64,10 @@ Fine-tune FinBERT (https://huggingface.co/ProsusAI/finbert) on news sentiment
   → Backtest with vectorbt
 
 This is achievable without a GPU cluster and gives you a real end-to-end system to learn from.
+
+
+Make a cute funny website, cat themed - Done 
+
+Base44 for your own AI maybe
+
+Create your own database using SQL maybe

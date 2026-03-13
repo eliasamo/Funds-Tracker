@@ -14,6 +14,16 @@ interface FinnhubNewsItem {
   url: string;
 }
 
+interface BorskollensNewsItem {
+  id: number;
+  provider: { name: string; paywallLevel: number };
+  title: string;
+  description: string;
+  webUrl: string;
+  imageUrl: string;
+  unixTimestamp: number;
+}
+
 export interface NewsItem {
   id: string;
   url: string;
@@ -68,54 +78,94 @@ export async function GET(request: NextRequest) {
       const stock = holding.stocks;
       if (!stock) continue;
 
-      // Use the raw ticker without exchange suffix for Finnhub
-      const queryTicker = stripSuffix(stock.ticker);
+      const isSwedish = stock.country === "SE" || stock.ticker.endsWith(".ST");
 
       try {
-        const now = Math.floor(Date.now() / 1000);
-        const oneWeekAgo = now - 7 * 24 * 60 * 60;
+        if (isSwedish) {
+          // --- Börskollen for Swedish stocks ---
+          const res = await fetch(
+            `https://www.borskollen.se/api/v3/news/search?q=${encodeURIComponent(stock.name)}&limit=10`,
+            { next: { revalidate: 300 } }
+          );
 
-        const res = await fetch(
-          `https://finnhub.io/api/v1/company-news?symbol=${queryTicker}&from=${toDateStr(oneWeekAgo)}&to=${toDateStr(now)}&token=${finnhubKey}`,
-          { next: { revalidate: 300 } } // Cache 5 minutes
-        );
-
-        if (!res.ok) {
-          console.warn(`Finnhub error for ${queryTicker}: ${res.status}`);
-          continue;
-        }
-
-        const articles: FinnhubNewsItem[] = await res.json();
-
-        for (const article of articles.slice(0, 5)) {
-          // --- Deduplication: skip if we've already seen this URL ---
-          if (seenUrls.has(article.url)) {
-            // Add this ticker to related_tickers of existing item
-            const existing = allNews.find((n) => n.url === article.url);
-            if (existing && !existing.related_tickers.includes(stock.ticker)) {
-              existing.related_tickers.push(stock.ticker);
-            }
+          if (!res.ok) {
+            console.warn(`Börskollen error for ${stock.name}: ${res.status}`);
             continue;
           }
 
-          seenUrls.add(article.url);
+          const data: { news: BorskollensNewsItem[] } = await res.json();
 
-          allNews.push({
-            id: `${article.id}`,
-            url: article.url,
-            headline: article.headline,
-            summary: article.summary,
-            source: article.source,
-            image_url: article.image,
-            published_at: new Date(article.datetime * 1000).toISOString(),
-            related_tickers: [stock.ticker],
-            category: article.category || "general",
-            country: stock.country || "US",
-            sector: stock.sector || "Unknown",
-          });
+          for (const article of (data.news || []).slice(0, 5)) {
+            if (seenUrls.has(article.webUrl)) {
+              const existing = allNews.find((n) => n.url === article.webUrl);
+              if (existing && !existing.related_tickers.includes(stock.ticker)) {
+                existing.related_tickers.push(stock.ticker);
+              }
+              continue;
+            }
+
+            seenUrls.add(article.webUrl);
+
+            allNews.push({
+              id: `borskollen-${article.id}`,
+              url: article.webUrl,
+              headline: article.title,
+              summary: article.description,
+              source: article.provider.name,
+              image_url: article.imageUrl,
+              published_at: new Date(article.unixTimestamp * 1000).toISOString(),
+              related_tickers: [stock.ticker],
+              category: "general",
+              country: stock.country || "SE",
+              sector: stock.sector || "Unknown",
+            });
+          }
+        } else {
+          // --- Finnhub for non-Swedish stocks ---
+          const queryTicker = stripSuffix(stock.ticker);
+          const now = Math.floor(Date.now() / 1000);
+          const oneWeekAgo = now - 7 * 24 * 60 * 60;
+
+          const res = await fetch(
+            `https://finnhub.io/api/v1/company-news?symbol=${queryTicker}&from=${toDateStr(oneWeekAgo)}&to=${toDateStr(now)}&token=${finnhubKey}`,
+            { next: { revalidate: 300 } }
+          );
+
+          if (!res.ok) {
+            console.warn(`Finnhub error for ${queryTicker}: ${res.status}`);
+            continue;
+          }
+
+          const articles: FinnhubNewsItem[] = await res.json();
+
+          for (const article of articles.slice(0, 5)) {
+            if (seenUrls.has(article.url)) {
+              const existing = allNews.find((n) => n.url === article.url);
+              if (existing && !existing.related_tickers.includes(stock.ticker)) {
+                existing.related_tickers.push(stock.ticker);
+              }
+              continue;
+            }
+
+            seenUrls.add(article.url);
+
+            allNews.push({
+              id: `${article.id}`,
+              url: article.url,
+              headline: article.headline,
+              summary: article.summary,
+              source: article.source,
+              image_url: article.image,
+              published_at: new Date(article.datetime * 1000).toISOString(),
+              related_tickers: [stock.ticker],
+              category: article.category || "general",
+              country: stock.country || "US",
+              sector: stock.sector || "Unknown",
+            });
+          }
         }
       } catch (fetchErr) {
-        console.warn(`Failed to fetch news for ${queryTicker}:`, fetchErr);
+        console.warn(`Failed to fetch news for ${stock.ticker}:`, fetchErr);
       }
     }
 
