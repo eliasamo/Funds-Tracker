@@ -19,6 +19,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# personal notes
+LLM-Trading-Notes.txt
+
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
