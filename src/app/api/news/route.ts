@@ -36,6 +36,7 @@ export interface NewsItem {
   category: string;
   country: string;
   sector: string;
+  sentiment?: { label: "positive" | "negative" | "neutral"; score: number };
 }
 
 /**
@@ -175,6 +176,81 @@ export async function GET(request: NextRequest) {
         new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
     );
 
+    // ----- Step 3b: Sentiment scoring via Hugging Face Inference API -----
+    const hfKey = process.env.HF_API_KEY;
+    if (hfKey && allNews.length > 0) {
+      const englishArticles = allNews.filter((n) => n.country !== "SE");
+      const swedishArticles = allNews.filter((n) => n.country === "SE");
+
+      const scoreWithModel = async (articles: NewsItem[], model: string) => {
+        if (!articles.length) return;
+        // Batch in chunks of 20 to stay within HF limits
+        for (let i = 0; i < articles.length; i += 20) {
+          const batch = articles.slice(i, i + 20);
+          try {
+            const res = await fetch(
+              `https://router.huggingface.co/hf-inference/models/${model}`,
+              {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${hfKey}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  inputs: batch.map((a) => a.headline),
+                }),
+              }
+            );
+            if (!res.ok) {
+              console.warn(`HF model ${model} returned ${res.status}:`, await res.text());
+              continue;
+            }
+            const results: Array<Array<{ label: string; score: number }>> = await res.json();
+            for (let j = 0; j < batch.length; j++) {
+              const scores = results[j];
+              if (!scores?.length) continue;
+              const top = scores.reduce((a, b) => (a.score > b.score ? a : b));
+              batch[j].sentiment = {
+                label: top.label.toLowerCase() as
+                  | "positive"
+                  | "negative"
+                  | "neutral",
+                score: top.score,
+              };
+            }
+          } catch (err) {
+            // Sentiment scoring failed — articles are still returned without it
+            console.warn(`HF model error for ${model}:`, err);
+          }
+        }
+      };
+
+      await Promise.all([
+        scoreWithModel(englishArticles, "ProsusAI/finbert"),
+        scoreWithModel(
+          swedishArticles,
+          "cardiffnlp/twitter-xlm-roberta-base-sentiment"
+        ),
+      ]);
+    }
+
+    // ----- Step 3c: Compute fund-level sentiment aggregate -----
+    const scored = allNews.filter((n) => n.sentiment);
+    const fundSentiment =
+      scored.length > 0
+        ? {
+            positive:
+              scored.filter((n) => n.sentiment!.label === "positive").length /
+              scored.length,
+            negative:
+              scored.filter((n) => n.sentiment!.label === "negative").length /
+              scored.length,
+            neutral:
+              scored.filter((n) => n.sentiment!.label === "neutral").length /
+              scored.length,
+          }
+        : null;
+
     // ----- Step 4: Cache in Supabase news_articles (best-effort) -----
     try {
       for (const item of allNews) {
@@ -200,6 +276,7 @@ export async function GET(request: NextRequest) {
       news: allNews,
       total: allNews.length,
       filters: { countries, sectors },
+      fundSentiment,
     });
   } catch (err) {
     console.error("Unexpected error in /api/news:", err);

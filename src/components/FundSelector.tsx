@@ -7,6 +7,12 @@ interface Fund {
   name: string;
 }
 
+interface FundSentiment {
+  positive: number;
+  negative: number;
+  neutral: number;
+}
+
 interface FundSelectorProps {
   funds: Fund[];
   selectedFundIsin: string | null;
@@ -15,6 +21,7 @@ interface FundSelectorProps {
   loading: boolean;
   articleCounts: Record<string, number>;
   unreadCounts: Record<string, number>;
+  fundSentiments: Record<string, FundSentiment>;
 }
 
 export default function FundSelector({
@@ -25,6 +32,7 @@ export default function FundSelector({
   loading,
   articleCounts,
   unreadCounts,
+  fundSentiments,
 }: FundSelectorProps) {
   const sectionLabel =
     "mb-3 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--muted)]";
@@ -86,6 +94,24 @@ export default function FundSelector({
                     </span>
                   )}
                 </div>
+
+                {/* Sentiment bar */}
+                {fundSentiments[fund.isin] && (
+                  <div className="mt-2 flex h-1 w-full overflow-hidden rounded-full bg-white/5">
+                    <div
+                      className="bg-green-500/60"
+                      style={{ width: `${fundSentiments[fund.isin].positive * 100}%` }}
+                    />
+                    <div
+                      className="bg-white/20"
+                      style={{ width: `${fundSentiments[fund.isin].neutral * 100}%` }}
+                    />
+                    <div
+                      className="bg-red-500/60"
+                      style={{ width: `${fundSentiments[fund.isin].negative * 100}%` }}
+                    />
+                  </div>
+                )}
 
                 {/* Loading overlay */}
                 {isSelected && loading && (

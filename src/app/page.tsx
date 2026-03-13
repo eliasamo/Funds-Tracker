@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { TrendingUp, Newspaper, BarChart2, LogOut, User, RefreshCw, GitCompareArrows } from "lucide-react";
+import { TrendingUp, Newspaper, BarChart2, LogOut, User, RefreshCw, GitCompareArrows, Lightbulb } from "lucide-react";
 import AddFundPanel from "@/components/AddFundPanel";
 import FundSelector from "@/components/FundSelector";
 import NewsFilters from "@/components/NewsFilters";
 import NewsFeed from "@/components/NewsFeed";
 import HoldingsView from "@/components/HoldingsView";
 import CompareView from "@/components/CompareView";
+import SentimentGuide from "@/components/SentimentGuide";
 import { createClient } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -29,6 +30,13 @@ interface NewsItem {
   category: string;
   country: string;
   sector: string;
+  sentiment?: { label: "positive" | "negative" | "neutral"; score: number };
+}
+
+interface FundSentiment {
+  positive: number;
+  negative: number;
+  neutral: number;
 }
 
 interface Holding {
@@ -59,11 +67,12 @@ export default function Home() {
   const [selectedFundIsin, setSelectedFundIsin] = useState<string | null>(null);
 
   // --- View tab ---
-  const [view, setView] = useState<"news" | "holdings" | "compare">("news");
+  const [view, setView] = useState<"news" | "holdings" | "compare" | "guide">("news");
 
   // --- News state ---
   const [news, setNews] = useState<NewsItem[]>([]);
   const [newsLoading, setNewsLoading] = useState(false);
+  const [fundSentiments, setFundSentiments] = useState<Record<string, FundSentiment>>({});
 
   // --- Article counts per fund (total) and read tracking ---
   const [articleCounts, setArticleCounts] = useState<Record<string, number>>({});
@@ -118,6 +127,9 @@ export default function Home() {
         setCountries(data.filters?.countries || []);
         setSectors(data.filters?.sectors || []);
         setArticleCounts((prev) => ({ ...prev, [fundIsin]: data.news.length }));
+        if (data.fundSentiment) {
+          setFundSentiments((prev) => ({ ...prev, [fundIsin]: data.fundSentiment }));
+        }
       }
     } catch (err) {
       console.error("Failed to load news:", err);
@@ -212,6 +224,7 @@ export default function Home() {
                   : total,
               ])
             )}
+            fundSentiments={fundSentiments}
           />
         </div>
 
@@ -272,6 +285,17 @@ export default function Home() {
             >
               <GitCompareArrows className="h-3.5 w-3.5" />
               Compare
+            </button>
+            <button
+              onClick={() => setView("guide")}
+              className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-xs font-medium transition-colors ${
+                view === "guide"
+                  ? "border-[var(--accent)] text-white"
+                  : "border-transparent text-[var(--muted)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              <Lightbulb className="h-3.5 w-3.5" />
+              Sentiment Guide
             </button>
 
             {/* Refresh button */}
@@ -341,6 +365,11 @@ export default function Home() {
           {/* Compare view */}
           {selectedFundIsin && view === "compare" && (
             <CompareView funds={funds} primaryIsin={selectedFundIsin} />
+          )}
+
+          {/* Sentiment guide */}
+          {selectedFundIsin && view === "guide" && (
+            <SentimentGuide />
           )}
         </main>
       </div>

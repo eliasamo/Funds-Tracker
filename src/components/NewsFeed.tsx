@@ -33,6 +33,7 @@ interface NewsItem {
   category: string;
   country: string;
   sector: string;
+  sentiment?: { label: "positive" | "negative" | "neutral"; score: number };
 }
 
 interface NewsFeedProps {
@@ -168,6 +169,26 @@ export default function NewsFeed({ news, loading, onReadChange }: NewsFeedProps)
                     {stripSuffix(ticker)}
                   </span>
                 ))}
+
+                {/* Sentiment badge */}
+                {item.sentiment && (
+                  <span
+                    className={`rounded-md border px-1.5 py-0.5 text-[10px] font-semibold ${
+                      item.sentiment.label === "positive"
+                        ? "border-green-500/20 bg-green-500/10 text-green-400"
+                        : item.sentiment.label === "negative"
+                        ? "border-red-500/20 bg-red-500/10 text-red-400"
+                        : "border-white/10 bg-white/5 text-[var(--muted)]"
+                    }`}
+                  >
+                    {item.sentiment.label === "positive"
+                      ? "▲"
+                      : item.sentiment.label === "negative"
+                      ? "▼"
+                      : "●"}{" "}
+                    {Math.round(item.sentiment.score * 100)}%
+                  </span>
+                )}
 
                 {/* Country flag badge */}
                 {item.country && (
