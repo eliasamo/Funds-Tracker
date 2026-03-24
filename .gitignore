@@ -25,3 +25,10 @@ LLM-Trading-Notes.txt
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Local ML artifacts
+ml/models/

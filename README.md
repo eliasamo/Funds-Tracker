@@ -59,3 +59,64 @@ npm run dev
 ### 5. Open the app
 
 Go to [http://localhost:3000](http://localhost:3000) in your browser.
+
+## XGBoost Signals Pipeline (Local)
+
+The project now includes a local XGBoost pipeline used by the Signals page.
+
+### 1. Install Python packages
+
+Install these into your Python environment:
+
+```bash
+pip install xgboost pandas numpy scikit-learn fastapi uvicorn
+```
+
+### 2. Train the model
+
+```bash
+npm run train:xgboost
+```
+
+To build training data from your real Supabase holdings/news + Finnhub price history
+and then train in one step:
+
+```bash
+npm run train:signals
+```
+
+This will create `ml/data/signals_training.csv` and then train from it.
+The builder needs these env vars (already used by the app):
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `FINNHUB_API_KEY`
+
+This writes:
+
+- `ml/models/xgboost_signals.json`
+- `ml/models/xgboost_signals.meta.json`
+
+If `ml/data/signals_training.csv` is missing, the trainer uses
+`ml/data/signals_training.sample.csv` so you can verify the pipeline end-to-end.
+
+Training now calibrates:
+
+- action thresholds (`buy` / `sell`) from score distribution
+- confidence scaling from model score magnitude
+
+These values are exported by the scorer and used by `/api/signals` for action mapping.
+
+### 3. Start the scoring service
+
+```bash
+npm run serve:xgboost
+```
+
+Service URL: `http://127.0.0.1:8008/score`
+
+### 4. Open the Signals page
+
+Use the Signals icon/button from the dashboard tab bar.
+
+If the local service is not running, `/api/signals` falls back to the built-in heuristic scorer so the page still works.

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { TrendingUp, Newspaper, BarChart2, LogOut, User, RefreshCw, GitCompareArrows, Lightbulb } from "lucide-react";
+import { TrendingUp, Newspaper, BarChart2, LogOut, User, RefreshCw, GitCompareArrows, Lightbulb, BrainCircuit } from "lucide-react";
 import AddFundPanel from "@/components/AddFundPanel";
 import FundSelector from "@/components/FundSelector";
 import NewsFilters from "@/components/NewsFilters";
@@ -308,6 +308,15 @@ export default function Home() {
               <RefreshCw className={`h-3.5 w-3.5 ${newsLoading ? "animate-spin" : ""}`} />
               Refresh
             </button>
+
+            <Link
+              href="/signals"
+              title="Open XGBoost Signals"
+              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
+            >
+              <BrainCircuit className="h-3.5 w-3.5" />
+              Signals
+            </Link>
           </div>
         )}
 

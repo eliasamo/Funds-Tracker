@@ -7,7 +7,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:signals-data": "python ml/build_signals_dataset.py",
+    "train:xgboost": "python ml/train_xgboost.py",
+    "train:signals": "npm run build:signals-data && npm run train:xgboost",
+    "serve:xgboost": "python -m uvicorn ml.xgboost_service:app --host 127.0.0.1 --port 8008"
   },
   "keywords": [],
   "author": "",
